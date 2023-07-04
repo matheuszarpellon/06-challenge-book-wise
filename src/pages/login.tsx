@@ -18,7 +18,7 @@ export default function Login() {
       <WelcomeSection>
         <Heading size="lg" color="gray-100">
           Boas vindas</Heading>
-          <AuthButtons />
+          <AuthButtons canGuest />
       </WelcomeSection>
     </LogoContainer>
   )

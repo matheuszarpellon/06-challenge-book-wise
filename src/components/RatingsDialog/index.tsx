@@ -3,7 +3,7 @@ import { BookOpen, BookmarkSimple, X } from '@phosphor-icons/react';
 import { CategoriesOnBooks, Category } from '@prisma/client';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useQuery } from '@tanstack/react-query';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { BookWithAvgRating } from '../BookCard';
 import { BookRatings } from '../BookRatings';
 import { RatingStars } from '../RatingStars';
@@ -11,6 +11,7 @@ import { Heading, Text } from '../Typography';
 import { RatingWithAuthor } from '../UserRatingCard';
 import { BookInfo } from './BookInfo';
 import { BookContent, BookDetailsContainer, BookDetailsWrapper, BookImage, BookInfos, DialogClose, DialogContent } from './styles';
+import { useRouter } from 'next/router';
 
 type BookDetails = BookWithAvgRating & {
   ratings: RatingWithAuthor[]
@@ -24,6 +25,14 @@ type RatingsDialogProps = {
 }
 export const RatingsDialog = ({ bookId, children }: RatingsDialogProps) => {
   const [open, setOpen] = useState(false)
+  const router = useRouter();
+  const paramBookId = router.query.book as string;
+
+  useEffect(() => {
+    if (paramBookId === bookId) {
+      setOpen(true);
+    }
+  }, [bookId, paramBookId])
 
   const { data: book } = useQuery<BookDetails>(['book', bookId], async () => {
     const { data } = await api.get(`/books/details/${bookId}`)
@@ -35,8 +44,16 @@ export const RatingsDialog = ({ bookId, children }: RatingsDialogProps) => {
   const ratingsLength = book?.ratings.length ?? 0
   const categories = book?.categories?.map(i => i?.category?.name).join(', ') ?? ""
 
-  console.log(categories)
+  const onOpenChange = (open: boolean) => {
+    if (open) {
+      router.push(`/explore?book=${bookId}`, undefined, { shallow: true });
+    } else {
+      router.push("/explore", undefined, { shallow: true });
+    }
 
+    setOpen(open);
+  }
+  
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
