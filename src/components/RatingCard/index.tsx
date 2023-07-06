@@ -14,42 +14,50 @@ export type RatingWithAuthorAndBook = Rating & {
 
 type RatingCardProps = {
   rating: RatingWithAuthorAndBook
+  variant?: 'default' | 'compact'
 }
 
 const MAX_SUMMARY_LENGTH = 180
 
-export const RatingCard = ({ rating }: RatingCardProps) => {
+export const RatingCard = ({ rating, variant = 'default' }: RatingCardProps) => {
   const distance = getRelativeTimeString(new Date(rating.created_at), "pt-BR")
   const { text: bookSummary, toggleShowMore, isShowingMore } = useToggleShowMore(rating.book.summary, MAX_SUMMARY_LENGTH)
 
   return (
-    <Container>
-      <UserDetails>
-        <section>
-          <Link href={`/profile/${rating.user_id}`}>
-            <Avatar src={rating.user.avatar_url!} alt={rating.user.name} />
-          </Link>
-          <div>
-            <Text>{rating.user.name}</Text>
-            <Text size="sm" color="gray-400">{distance}</Text>
-          </div>
-        </section>
-        <RatingStars rating={rating.rate} />
-      </UserDetails>
-
+    <Container variant={variant}>
+      {variant === 'default' &&
+        <UserDetails>
+          <section>
+            <Link href={`/profile/${rating.user_id}`}>
+              <Avatar src={rating.user.avatar_url!} alt={rating.user.name} />
+            </Link>
+            <div>
+              <Text>{rating.user.name}</Text>
+              <Text size="sm" color="gray-400">{distance}</Text>
+            </div>
+          </section>
+          <RatingStars rating={rating.rate} />
+        </UserDetails>
+      }
       <BookDetails>
         <Link style={{ display: 'flex' }} href={`/explore?book=${rating.book_id}`}>
           <BookImage width={108} height={152} alt="book" src={rating.book.cover_url} />
         </Link>
         <BookContent>
           <div>
+
             <Heading size="xs">
               {rating.book.name}
             </Heading>
             <Text size="sm" color="gray-400">{rating.book.author}</Text>
           </div>
-
-          <Text size="sm" color="gray-300" css={{ marginTop: "$5"}} >
+          {variant === 'compact' && (
+            <CompactDetails>
+              <Text size="sm" color="gray-300">{distance}</Text>
+              <RatingStars rating={rating.rate} />
+            </CompactDetails>
+          )}
+          <Text size="sm" color="gray-300" css={{ marginTop: "$5" }} >
             {bookSummary}
             {rating.book.summary.length > MAX_SUMMARY_LENGTH && (
               <ToggleShowMoreButton onClick={toggleShowMore}>
